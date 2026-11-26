@@ -1,0 +1,263 @@
+<html>
+  <head>
+    <meta charset="utf-8">
+  </head>
+  <body>
+    <ol>
+      <li>
+        <span style="--tn-background:#e64d4d;background-color:#e64d4d;">DNS</span> - служба, которая по имени возвращает ip адрес необходимого сайта. Распределенная телефонная книга
+        <ol>
+          <li>
+            <p>DNS распределенный, потому что не у всех хранятся адреса ко всем сайтам. Кто-то хранит какие-то адреса и с помощь каких-то частей поможет найти адрес. ИМЕНА ЧИТАЮТСЯ СПРАВА НА ЛЕВО. От общего к частному.</p>
+            <p>docs.github.com.<br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; └─ корень (точка в конце обычно не пишется)<br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; └──── зона .com<br>&nbsp; &nbsp; &nbsp; &nbsp; └─────────── домен github.com<br>└──────────────── поддомен docs</p>
+          </li>
+          <li>
+            <figure class="table">
+              <table>
+                <thead>
+                  <tr>
+                    <th scope="col">Уровень</th>
+                    <th scope="col">Кто хранит</th>
+                    <th scope="col">Что знает</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>корень <code>.</code></td>
+                    <td>13 групп корневых серверов</td>
+                    <td>кто отвечает за <code>.com</code>, <code>.ru</code>, <code>.org</code>...</td>
+                  </tr>
+                  <tr>
+                    <td>зона <code>.com</code></td>
+                    <td>серверы реестра <code>.com</code></td>
+                    <td>кто отвечает за <code>github.com</code></td>
+                  </tr>
+                  <tr>
+                    <td><code>github.com</code></td>
+                    <td>DNS-серверы самого GitHub</td>
+                    <td>точный адрес <code>github.com</code>, <code>docs.github.com</code> и т. д.</td>
+                  </tr>
+                </tbody>
+              </table>
+            </figure>
+            <p>браузер ──▶ «какой адрес у github.com?»<br>&nbsp; │<br>&nbsp; ▼<br>1. локальный кэш на ноутбуке ─ уже спрашивали недавно? ── да ──▶ сразу ответ<br>&nbsp; │ нет<br>&nbsp; ▼<br>2. DNS-сервер провайдера или роутера (резолвер)<br>&nbsp; │ не знает → идёт по цепочке:<br>&nbsp; ├──▶ корень: &nbsp; &nbsp; &nbsp; &nbsp;«за .com отвечают вот эти серверы»<br>&nbsp; ├──▶ сервер .com: &nbsp; «за github.com отвечают вот эти серверы»<br>&nbsp; └──▶ сервер GitHub: «github.com = 140.82.121.4»<br>&nbsp; │<br>&nbsp; ▼<br>ответ возвращается браузеру и запоминается в кэше<br>&nbsp; │<br>&nbsp; ▼<br>браузер подключается к 140.82.121.4:443</p>
+          </li>
+          <li>Резолвер(resolve - разрешить, найти) или же по другому DNS &nbsp;сервер провайдера или роутера - это сервер который и ищет ip адрес нужного сайта из пункта b.</li>
+          <li><span style="--tn-background:#e64d4d;background-color:#e64d4d;">Кэш и TTL</span> - Доставать DNS адреса по такой цепочке долго и не удобно, поэтому ip адреса приходят с TTL(Time To Live), с временем хранения адреса в кэше, например 1 час, через час опять придется бегать по серверам и искать адрес.</li>
+          <li>
+            <h3>Типы записей</h3>
+            <p>В «книге» хранятся не только адреса. Главные типы:</p>
+          </li>
+          <li>
+            <figure class="table">
+              <table>
+                <thead>
+                  <tr>
+                    <th scope="col">Запись</th>
+                    <th scope="col">Что хранит</th>
+                    <th scope="col">Пример</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td><code>A</code></td>
+                    <td>имя → IPv4-адрес</td>
+                    <td><code>github.com → 140.82.121.4</code></td>
+                  </tr>
+                  <tr>
+                    <td><code>AAAA</code></td>
+                    <td>имя → IPv6-адрес</td>
+                    <td>&nbsp;</td>
+                  </tr>
+                  <tr>
+                    <td><code>CNAME</code></td>
+                    <td>имя → <strong>другое имя</strong> (псевдоним)</td>
+                    <td><code>www.example.com → example.com</code></td>
+                  </tr>
+                  <tr>
+                    <td><code>MX</code></td>
+                    <td>куда доставлять почту домена</td>
+                    <td>&nbsp;</td>
+                  </tr>
+                </tbody>
+              </table>
+            </figure>
+            <h3>Файл <code>/etc/hosts</code></h3>
+            <p>До всякого DNS система смотрит в локальный файл <code>/etc/hosts</code>. Там можно вручную прописать «имя → адрес». Именно там записано, что <code>localhost</code> это <code>127.0.0.1</code>. Его используют для тестов: «пусть <code>mysite.test</code> ведёт на мой ноутбук».</p>
+            <h3>Почему это важно для DevOps</h3>
+            <p>Половина фраз «сайт не работает» на деле оказываются «не работает DNS»: запись не создана, указывает на старый сервер, не истёк кэш. Поэтому при диагностике первый вопрос: <strong>по имени не открывается, а по IP открывается?</strong> Если так, проблема в DNS.&nbsp;</p>
+          </li>
+          <li>
+            <h3><span style="--tn-background:#e64d4d;background-color:#e64d4d;">Команды для DNS</span></h3>
+            <p>Сначала описание, практика потом.</p>
+          </li>
+          <li>
+            <figure class="table">
+              <table>
+                <thead>
+                  <tr>
+                    <th scope="col">Команда</th>
+                    <th scope="col">Что делает</th>
+                    <th scope="col">Пример</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td><code>dig имя</code></td>
+                    <td>подробно спрашивает DNS и показывает ответ: записи, TTL, какой сервер ответил</td>
+                    <td><code>dig github.com</code></td>
+                  </tr>
+                  <tr>
+                    <td><code>dig +short имя</code></td>
+                    <td>то же, но выводит <strong>только адрес</strong></td>
+                    <td><code>dig +short github.com</code> → <code>140.82.121.4</code></td>
+                  </tr>
+                  <tr>
+                    <td><code>dig имя @сервер</code></td>
+                    <td>спросить <strong>конкретный</strong> DNS-сервер, а не системный</td>
+                    <td><code>dig +short github.com @8.8.8.8</code></td>
+                  </tr>
+                  <tr>
+                    <td><code>resolvectl status</code></td>
+                    <td>показывает, к каким DNS-серверам обращается твой <code>systemd-resolved</code></td>
+                    <td>&nbsp;</td>
+                  </tr>
+                  <tr>
+                    <td><code>cat /etc/hosts</code></td>
+                    <td>показать локальный файл «имя → адрес»</td>
+                    <td>&nbsp;</td>
+                  </tr>
+                  <tr>
+                    <td><code>ping имя</code></td>
+                    <td>проверить, отвечает ли машина: сначала узнаёт IP через DNS, потом шлёт пакеты. Выход <code>Ctrl+C</code></td>
+                    <td><code>ping -c 3 github.com</code> (<code>-c 3</code> значит 3 пакета)</td>
+                  </tr>
+                </tbody>
+              </table>
+            </figure>
+            <p>dig github.com</p>
+            <ol>
+              <li>При повторном выполнении команды TTL стал 52, а время ответа стало 0, следовательно прошло время 8 секунд до повторного запроса и тк TTL уменьшился и время ответа 0, мы взяли адрес из кэша</li>
+            </ol>
+          </li>
+        </ol>
+      </li>
+      <li>
+        <span style="--tn-background:#e64d4d;background-color:#e64d4d;">HTTP</span>(Hyper Text Transfer Protocol)- протокол(правила) по которым клиент(например брузер) и веб-сервер обмениваются данными. HTTPS - тоже самое, но зашифрованное.
+        <ol>
+          <li>Коды ошибок - напрмер при попытке зайти на сайт вылезает ошбика 4хх - это ошибка клиента(например браузера), запросил что-то не то.(При этом эта ошибка будет только при удачной связи с DNS, если связи с днс нет, и кода ошибки не будет) https://github.com/Velensian/нет_такого &nbsp; &nbsp; → 404, сайт есть, страницы по этому пути нет</li>
+          <li>А если выпадает ошибка 5хх - это ошибка веб-сервера, запрос нормальный, но сервер не смог его обработать.</li>
+          <li>Путь после имени сайт показывает какую страницу ищем, на сайте.</li>
+          <li><span style="--tn-background:#e64d4d;background-color:#e64d4d;">Главные коды ошибок HTTP</span></li>
+          <li>
+            <figure class="table">
+              <table>
+                <thead>
+                  <tr>
+                    <th scope="col">Код</th>
+                    <th scope="col">Значение</th>
+                    <th scope="col">Чья ошибка</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td><strong>200</strong> OK</td>
+                    <td>всё хорошо, вот ответ</td>
+                    <td>&nbsp;</td>
+                  </tr>
+                  <tr>
+                    <td><strong>301 / 302</strong></td>
+                    <td>страница переехала, иди по новому адресу (перенаправление)</td>
+                    <td>&nbsp;</td>
+                  </tr>
+                  <tr>
+                    <td><strong>400</strong> Bad Request</td>
+                    <td>запрос составлен неправильно</td>
+                    <td>клиент</td>
+                  </tr>
+                  <tr>
+                    <td><strong>401</strong> Unauthorized</td>
+                    <td>нужно войти (логин, токен)</td>
+                    <td>клиент</td>
+                  </tr>
+                  <tr>
+                    <td><strong>403</strong> Forbidden</td>
+                    <td>вошёл, но прав нет. Ты видел это при <code>git push</code> с токеном без прав</td>
+                    <td>клиент</td>
+                  </tr>
+                  <tr>
+                    <td><strong>404</strong> Not Found</td>
+                    <td>по этому пути ничего нет</td>
+                    <td>клиент</td>
+                  </tr>
+                  <tr>
+                    <td><strong>500</strong> Internal Server Error</td>
+                    <td>в программе сервера ошибка (например, упал код на Python)</td>
+                    <td>сервер</td>
+                  </tr>
+                  <tr>
+                    <td><strong>502</strong> Bad Gateway</td>
+                    <td>промежуточный сервер (например, nginx) не получил ответ от приложения за ним</td>
+                    <td>сервер</td>
+                  </tr>
+                  <tr>
+                    <td><strong>503</strong> Service Unavailable</td>
+                    <td>сервер перегружен или на обслуживании</td>
+                    <td>сервер</td>
+                  </tr>
+                </tbody>
+              </table>
+            </figure>
+          </li>
+          <li>
+            <span style="--tn-background:#e64d4d;background-color:#e64d4d;">curl - HTTP клиент в терминале</span>
+            <ol>
+              <li>curl - программа, отправляющая HTTP запросы из терминала</li>
+              <li>
+                <figure class="table">
+                  <table>
+                    <thead>
+                      <tr>
+                        <th scope="col">Команда</th>
+                        <th scope="col">Что делает</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td><code>curl адрес</code></td>
+                        <td>отправить запрос и вывести содержимое ответа (HTML, данные)</td>
+                      </tr>
+                      <tr>
+                        <td><code>curl -I адрес</code></td>
+                        <td>показать только <strong>заголовки</strong> ответа, включая код состояния, без содержимого</td>
+                      </tr>
+                      <tr>
+                        <td><code>curl -s -o /dev/null -w "%{http_code}\n" адрес</code></td>
+                        <td>вывести <strong>только код</strong> (удобно в скриптах). <code>-s</code> без лишнего вывода, <code>-o /dev/null</code> выбросить содержимое, <code>-w</code> что напечатать в конце</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </figure>
+              </li>
+            </ol>
+          </li>
+          <li>
+            <span style="--tn-background:#e64d4d;background-color:#e64d4d;">Отправка запроса на сайт</span>
+            <ol>
+              <li>Были выполнены 2 команды: 1)curl -I https://github.com/Velensian/DevOps<br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; 2)curl -I https://github.com/Velensian/нет_такого_репо</li>
+              <li>
+                <p>Мой вердикт: Начальный код 200, я предполагаю, что он относится именно к подключению к основному сайту, далее второй код HTTP2 &nbsp;- 200, значит удалось подключится к странице девопст</p>
+                <p>во втором случае HTTP1 - 200, значит удалось подключится к самому гизабу, а дальше HTTP2 - 404, следовательно страница не найдена на сайте гитхаба</p>
+                <p>По факту:&nbsp;</p>
+                <p>Коды прочитаны верно: у твоего репозитория <strong>200</strong>, у несуществующего пути <strong>404</strong>. Сайт GitHub один и тот же, разница только в странице. Ровно то, что мы разбирали.</p>
+                <p>Про первую строку <code>HTTP/1.1 200 Connection established</code> догадка близкая, но источник другой. Это ответ не GitHub, а твоего <strong>прокси</strong>, того самого <code>xray</code>. <code>curl</code> сначала просит прокси: «соедини меня с github.com», прокси отвечает «соединение установлено», и уже <strong>через этот туннель</strong> идёт настоящий запрос, на который отвечает GitHub (<code>HTTP/2 200</code> или <code>404</code>). Без VPN первой строки не было бы.</p>
+                <p><strong>Прокси</strong> (proxy): посредник между тобой и сайтом, запросы идут через него.</p>
+                <p><strong>Заголовки</strong> (headers): служебные строки ответа вида <code>имя: значение</code> после кода. Например, <code>server: github.com</code> (кто ответил) или <code>content-type: text/html</code> (что внутри).</p>
+              </li>
+            </ol>
+          </li>
+        </ol>
+      </li>
+    </ol>
+  </body>
+</html>
